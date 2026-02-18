@@ -2,7 +2,10 @@
   "name": "escodeve-worker",
   "main": "src/index.ts",
   "compatibility_date": "2026-02-12",
+  "dev": {
+    "port": 8790
+  },
   "vars": {
-    "DATABASE_URL": "postgresql://neondb_owner:npg_Ob8kQ9rgfdhX@ep-super-recipe-ai6rzejt-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+    "DATABASE_URL": "postgresql://neondb_owner:npg_Jt0MryzpglZ8@ep-royal-grass-aimdjcru-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
   }
 }

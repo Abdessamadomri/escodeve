@@ -1,9 +1,15 @@
-import { Hono } from "hono";
+import { Hono } from 'hono';
+import { swaggerUI } from '@hono/swagger-ui';
+import schoolRoutes from './routes/school.routes';
+import { swaggerConfig } from './docs/swagger.config';
+import { Env } from './shared/types';
 
-const app = new Hono<{ Bindings: CloudflareBindings }>();
+const app = new Hono<{ Bindings: Env }>();
 
-app.get("/message", (c) => {
-  return c.text("Hello Hono!");
-});
+app.get('/swagger', swaggerUI({ url: '/api-doc.json' }));
+app.get('/api-doc.json', (c) => c.json(swaggerConfig));
+
+app.route('/schools', schoolRoutes);
 
 export default app;
+
