@@ -1,15 +1,17 @@
 import { Hono } from 'hono';
 import { getAllSchools, createSchool, updateSchool, deleteSchool } from '../controllers/school.controller';
+import { authMiddleware } from '../middlewares/auth.middleware';
 import { Env } from '../shared/types';
 
 const app = new Hono<{ Bindings: Env }>();
+
+app.use('/*', authMiddleware);
 
 app.get('/', async (c) => {
   try {
     const schools = await getAllSchools(c.env);
     return c.json(schools);
   } catch (error: any) {
-    console.error('GET Error:', error);
     return c.json({ error: error.message }, 500);
   }
 });
@@ -17,11 +19,9 @@ app.get('/', async (c) => {
 app.post('/', async (c) => {
   try {
     const data = await c.req.json();
-    console.log('POST data:', data);
     const school = await createSchool(c.env, data);
     return c.json(school, 201);
   } catch (error: any) {
-    console.error('POST Error:', error);
     return c.json({ error: error.message }, 500);
   }
 });
@@ -33,7 +33,6 @@ app.put('/:id', async (c) => {
     const school = await updateSchool(c.env, id, data);
     return c.json(school);
   } catch (error: any) {
-    console.error('PUT Error:', error);
     return c.json({ error: error.message }, 500);
   }
 });
@@ -44,7 +43,6 @@ app.delete('/:id', async (c) => {
     await deleteSchool(c.env, id);
     return c.json({ message: 'École supprimée' });
   } catch (error: any) {
-    console.error('DELETE Error:', error);
     return c.json({ error: error.message }, 500);
   }
 });
