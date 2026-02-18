@@ -1,0 +1,77 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model School {
+  id        Int       @id @default(autoincrement())
+  name      String
+  address   String
+  createdAt DateTime  @default(now())
+  classes   Class[]
+  teachers  Teacher[]
+  staff     Staff[]
+  students  Student[]
+}
+
+model Teacher {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  subject      String
+  salaryType   String   // "fixed" ou "hourly"
+  salaryAmount Float
+  schoolId     Int
+  school       School   @relation(fields: [schoolId], references: [id])
+  classes      Class[]
+  createdAt    DateTime @default(now())
+}
+
+model Staff {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  role         String   // "admin", "secretary", etc.
+  salaryAmount Float
+  schoolId     Int
+  school       School   @relation(fields: [schoolId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model Class {
+  id        Int       @id @default(autoincrement())
+  name      String
+  level     String
+  schoolId  Int
+  school    School    @relation(fields: [schoolId], references: [id])
+  students  Student[]
+  teacherId Int?
+  teacher   Teacher?  @relation(fields: [teacherId], references: [id])
+  createdAt DateTime  @default(now())
+}
+
+model Student {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  classId   Int?
+  class     Class?   @relation(fields: [classId], references: [id])
+  schoolId  Int
+  school    School   @relation(fields: [schoolId], references: [id])
+  parentId  Int?
+  parent    Parent?  @relation(fields: [parentId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Parent {
+  id       Int       @id @default(autoincrement())
+  name     String
+  email    String    @unique
+  phone    String?
+  students Student[]
+  createdAt DateTime @default(now())
+}
