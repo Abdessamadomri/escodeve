@@ -1,10 +1,7 @@
 import { Client } from '@neondatabase/serverless';
+import { Env } from './types';
 
-type Env = {
-  DATABASE_URL: string;
-};
-
-export function createDbClient(env: Env) {
+export function createDbClient(env: Env): Client {
   return new Client({
     connectionString: env.DATABASE_URL,
   });

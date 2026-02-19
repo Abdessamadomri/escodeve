@@ -7,71 +7,185 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// --- IDENTITY & SAAS ---
 model School {
-  id        Int       @id @default(autoincrement())
+  id        String   @id @default(uuid())
   name      String
-  address   String
-  createdAt DateTime  @default(now())
-  classes   Class[]
-  teachers  Teacher[]
-  staff     Staff[]
-  students  Student[]
-}
-
-model Teacher {
-  id           Int      @id @default(autoincrement())
-  name         String
-  email        String   @unique
-  subject      String
-  salaryType   String   // "fixed" ou "hourly"
-  salaryAmount Float
-  schoolId     Int
-  school       School   @relation(fields: [schoolId], references: [id])
-  classes      Class[]
-  createdAt    DateTime @default(now())
-}
-
-model Staff {
-  id           Int      @id @default(autoincrement())
-  name         String
-  email        String   @unique
-  role         String   // "admin", "secretary", etc.
-  salaryAmount Float
-  schoolId     Int
-  school       School   @relation(fields: [schoolId], references: [id])
-  createdAt    DateTime @default(now())
-}
-
-model Class {
-  id        Int       @id @default(autoincrement())
-  name      String
-  level     String
-  schoolId  Int
-  school    School    @relation(fields: [schoolId], references: [id])
-  students  Student[]
-  teacherId Int?
-  teacher   Teacher?  @relation(fields: [teacherId], references: [id])
-  createdAt DateTime  @default(now())
-}
-
-model Student {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  classId   Int?
-  class     Class?   @relation(fields: [classId], references: [id])
-  schoolId  Int
-  school    School   @relation(fields: [schoolId], references: [id])
-  parentId  Int?
-  parent    Parent?  @relation(fields: [parentId], references: [id])
+  logo      String?
+  isActive  Boolean  @default(true)
+  plan      String   @default("BASIC")
+  users     User[]
   createdAt DateTime @default(now())
 }
 
-model Parent {
-  id       Int       @id @default(autoincrement())
+model User {
+  id       String  @id @default(uuid())
+  name     String?
+  email    String  @unique
+  password String
+  role     Role    @default(STUDENT)
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id])
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN_ECOLE
+  PROF
+  STAFF
+  STUDENT
+  PARENT
+}
+
+// --- HR & WORKERS ---
+model StaffProfile {
+  id         String  @id @default(uuid())
+  userId     String  @unique
+  jobTitle   String
+  salaryFixe Decimal
+  schoolId   String
+}
+
+model TeacherProfile {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  specialty  String
+  salaryFixe Decimal?
+  hourlyRate Decimal?
+  schoolId   String
+}
+
+// --- STUDENTS & PARENTS ---
+model ParentProfile {
+  id       String           @id @default(uuid())
+  userId   String           @unique
+  students StudentProfile[]
+  schoolId String
+}
+
+model StudentProfile {
+  id          String       @id @default(uuid())
+  userId      String       @unique
+  matricule   String       @unique
+  level       String
+  parentId    String
+  parent      ParentProfile @relation(fields: [parentId], references: [id])
+  groupId     String?
+  group       Group?       @relation(fields: [groupId], references: [id])
+  schoolId    String
+  attendances Attendance[]
+  grades      Grade[]
+}
+
+// --- ACADEMIC & SCHEDULE ---
+model Group {
+  id       String           @id @default(uuid())
   name     String
-  email    String    @unique
-  phone    String?
-  students Student[]
-  createdAt DateTime @default(now())
+  level    String
+  students StudentProfile[]
+  lessons  Lesson[]
+  schoolId String
+}
+
+model Classroom {
+  id       String   @id @default(uuid())
+  name     String
+  capacity Int
+  lessons  Lesson[]
+  schoolId String
+}
+
+model Lesson {
+  id          String       @id @default(uuid())
+  day         Day
+  startTime   String
+  endTime     String
+  teacherId   String
+  groupId     String
+  group       Group        @relation(fields: [groupId], references: [id])
+  classroomId String
+  classroom   Classroom    @relation(fields: [classroomId], references: [id])
+  subjectId   String
+  schoolId    String
+  attendances Attendance[]
+}
+
+enum Day {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+model Subject {
+  id       String @id @default(uuid())
+  name     String
+  code     String @unique
+  schoolId String
+}
+
+// --- ATTENDANCE & GRADES ---
+model Attendance {
+  id        String           @id @default(uuid())
+  studentId String
+  student   StudentProfile   @relation(fields: [studentId], references: [id])
+  lessonId  String
+  lesson    Lesson           @relation(fields: [lessonId], references: [id])
+  status    AttendanceStatus
+  date      DateTime
+  createdAt DateTime         @default(now())
+  schoolId  String
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+model Grade {
+  id        String         @id @default(uuid())
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [id])
+  subjectId String
+  value     Decimal
+  maxValue  Decimal
+  comment   String?
+  createdAt DateTime       @default(now())
+  schoolId  String
+}
+
+// --- AVAILABILITY ---
+model Availability {
+  id          String  @id @default(uuid())
+  teacherId   String
+  day         Day
+  startTime   String
+  endTime     String
+  isAvailable Boolean @default(true)
+  schoolId    String
+}
+
+// --- FINANCE ---
+model Transaction {
+  id           String    @id @default(uuid())
+  title        String
+  type         TransType
+  category     String
+  amountDue    Decimal
+  amountPaid   Decimal
+  refundAmount Decimal   @default(0)
+  targetId     String?
+  schoolId     String
+  createdAt    DateTime  @default(now())
+}
+
+enum TransType {
+  REVENUE
+  EXPENSE
+  SALARY
+  REFUND
 }

@@ -1,17 +1,22 @@
 export type Env = {
   DATABASE_URL: string;
 };
-
 export type CreateTeacherDto = {
   name: string;
   email: string;
-  subject: string;
+  password: string;
+  specialty: string;
   salaryType: "fixed" | "hourly";
   salaryAmount: number;
-  schoolId: number;
+  schoolId: string;
 };
 
-export type UpdateTeacherDto = Partial<Omit<CreateTeacherDto, "schoolId">>;
+
+export type UpdateTeacherDto = {
+  specialty?: string;
+  salaryType?: "fixed" | "hourly";
+  salaryAmount?: number;
+};
 
 export type CreateStaffDto = {
   name: string;
